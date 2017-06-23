@@ -32,7 +32,7 @@ function mdTablePagination() {
     };
 
     self.hasNext = function () {
-      return self.page * self.limit < self.total;
+      return !self.maxTotal || self.total < self.maxTotal ? self.page * self.limit < self.total : true;
     };
 
     self.hasPrevious = function () {
@@ -45,7 +45,10 @@ function mdTablePagination() {
     };
 
     self.max = function () {
-      return self.hasNext() ? self.page * self.limit : self.total;
+      if(self.maxTotal && self.total === self.maxTotal)
+        return "";
+      else
+        return self.hasNext() ? self.page * self.limit : self.total;
     };
 
     self.min = function () {
@@ -66,7 +69,10 @@ function mdTablePagination() {
     };
 
     self.pages = function () {
-      return isPositive(self.total) ? Math.ceil(self.total / (isPositive(self.limit) ? self.limit : 1)) : 1;
+      if(!self.maxPages || self.total < self.maxPages)
+        return isPositive(self.total) ? Math.ceil(self.total / (isPositive(self.limit) ? self.limit : 1)) : 1;
+      else
+        return 2147483646
     };
 
     self.previous = function () {
@@ -118,7 +124,8 @@ function mdTablePagination() {
       pageSelect: '=?mdPageSelect',
       onPaginate: '=?mdOnPaginate',
       limitOptions: '=?mdLimitOptions',
-      total: '@mdTotal'
+      total: '@mdTotal',
+      maxTotal: '@maxTotal'
     },
     compile: compile,
     controller: Controller,

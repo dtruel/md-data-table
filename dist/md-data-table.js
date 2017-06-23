@@ -2,14 +2,14 @@
  * Angular Material Data Table
  * https://github.com/daniel-nagy/md-data-table
  * @license MIT
- * v0.10.9
+ * v0.10.10
  */
 (function (window, angular, undefined) {
 'use strict';
 
 angular.module('md.table.templates', ['md-table-pagination.html', 'md-table-progress.html', 'arrow-up.svg', 'navigate-before.svg', 'navigate-first.svg', 'navigate-last.svg', 'navigate-next.svg']);
 
-angular.module('md-table-pagination.html', []).run(['$templateCache', function($templateCache) {
+angular.module('md-table-pagination.html', []).run(['$templateCache', function ($templateCache) {
   $templateCache.put('md-table-pagination.html',
     '<div class="page-select" ng-if="$pagination.showPageSelect()">\n' +
     '  <div class="label">{{$pagination.label.page}}</div>\n' +
@@ -30,7 +30,7 @@ angular.module('md-table-pagination.html', []).run(['$templateCache', function($
     '</div>\n' +
     '\n' +
     '<div class="buttons">\n' +
-    '  <div class="label">{{$pagination.min()}} - {{$pagination.max()}} {{$pagination.label.of}} {{$pagination.total}}</div>\n' +
+    '  <div class="label">Starting at {{$pagination.min()}} {{$pagination.label.of}} {{$pagination.maxTotal && $pagination.total < $pagination.maxTotal ? $pagination.total : $pagination.maxTotal + "+"}}</div>\n' +
     '\n' +
     '  <md-button class="md-icon-button" type="button" ng-if="$pagination.showBoundaryLinks()" ng-click="$pagination.first()" ng-disabled="$pagination.disabled || !$pagination.hasPrevious()" aria-label="First">\n' +
     '    <md-icon md-svg-icon="navigate-first.svg"></md-icon>\n' +
@@ -50,7 +50,7 @@ angular.module('md-table-pagination.html', []).run(['$templateCache', function($
     '</div>');
 }]);
 
-angular.module('md-table-progress.html', []).run(['$templateCache', function($templateCache) {
+angular.module('md-table-progress.html', []).run(['$templateCache', function ($templateCache) {
   $templateCache.put('md-table-progress.html',
     '<tr>\n' +
     '  <th colspan="{{columnCount()}}">\n' +
@@ -59,27 +59,27 @@ angular.module('md-table-progress.html', []).run(['$templateCache', function($te
     '</tr>');
 }]);
 
-angular.module('arrow-up.svg', []).run(['$templateCache', function($templateCache) {
+angular.module('arrow-up.svg', []).run(['$templateCache', function ($templateCache) {
   $templateCache.put('arrow-up.svg',
     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>');
 }]);
 
-angular.module('navigate-before.svg', []).run(['$templateCache', function($templateCache) {
+angular.module('navigate-before.svg', []).run(['$templateCache', function ($templateCache) {
   $templateCache.put('navigate-before.svg',
     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>');
 }]);
 
-angular.module('navigate-first.svg', []).run(['$templateCache', function($templateCache) {
+angular.module('navigate-first.svg', []).run(['$templateCache', function ($templateCache) {
   $templateCache.put('navigate-first.svg',
     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M7 6 v12 h2 v-12 h-2z M17.41 7.41L16 6l-6 6 6 6 1.41-1.41L12.83 12z"/></svg>');
 }]);
 
-angular.module('navigate-last.svg', []).run(['$templateCache', function($templateCache) {
+angular.module('navigate-last.svg', []).run(['$templateCache', function ($templateCache) {
   $templateCache.put('navigate-last.svg',
     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M15 6 v12 h2 v-12 h-2z M8 6L6.59 7.41 11.17 12l-4.58 4.59L8 18l6-6z"/></svg>');
 }]);
 
-angular.module('navigate-next.svg', []).run(['$templateCache', function($templateCache) {
+angular.module('navigate-next.svg', []).run(['$templateCache', function ($templateCache) {
   $templateCache.put('navigate-next.svg',
     '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>');
 }]);
@@ -1310,7 +1310,7 @@ function mdTablePagination() {
     };
 
     self.hasNext = function () {
-      return self.page * self.limit < self.total;
+      return !self.maxTotal || self.total < self.maxTotal ? self.page * self.limit < self.total : true;
     };
 
     self.hasPrevious = function () {
@@ -1323,7 +1323,10 @@ function mdTablePagination() {
     };
 
     self.max = function () {
-      return self.hasNext() ? self.page * self.limit : self.total;
+      if(self.maxTotal && self.total === self.maxTotal)
+        return "";
+      else
+        return self.hasNext() ? self.page * self.limit : self.total;
     };
 
     self.min = function () {
@@ -1344,7 +1347,10 @@ function mdTablePagination() {
     };
 
     self.pages = function () {
-      return isPositive(self.total) ? Math.ceil(self.total / (isPositive(self.limit) ? self.limit : 1)) : 1;
+      if(!self.maxPages || self.total < self.maxPages)
+        return isPositive(self.total) ? Math.ceil(self.total / (isPositive(self.limit) ? self.limit : 1)) : 1;
+      else
+        return 2147483646
     };
 
     self.previous = function () {
@@ -1396,7 +1402,8 @@ function mdTablePagination() {
       pageSelect: '=?mdPageSelect',
       onPaginate: '=?mdOnPaginate',
       limitOptions: '=?mdLimitOptions',
-      total: '@mdTotal'
+      total: '@mdTotal',
+      maxTotal: '@maxTotal'
     },
     compile: compile,
     controller: Controller,
