@@ -1,3 +1,7 @@
+# Changes by dtruel:
+I have added another directive called `max-total` that you can add to `md-table-pagination`.  The reason is that I'm using Mongodb which gets pretty slow for counts in some situations, so I set a limit of 500 to my counts on the server.  That way mongodb will count up to 500 documents, but if it finds 500, it will stop counting there and just say there are 500 documents in the set. With this new directive, I can set `max-total="500"` and I will still be able to continue paging through results until I hit the end of the set.  It will just show 500+ as the count number of documents.
+
+
 # Material Design Data Table
 
 This module is an effort to implement Material Design data tables in [Angular Material](https://material.angularjs.org/latest/#/). Data tables are used to present raw data sets and usually appear in desktop enterprise applications. Data tables are particularly useful for visualizing and manipulating large data sets.
